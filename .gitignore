@@ -1,0 +1,8 @@
+results/*.rds
+manuscript/*.aux
+manuscript/*.log
+manuscript/*.bbl
+manuscript/*.blg
+manuscript/*.out
+manuscript/*.toc
+.Rhistory
