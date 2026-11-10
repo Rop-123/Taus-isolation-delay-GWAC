@@ -1,0 +1,82 @@
+---
+title: "How fast is fast enough? The onset-to-isolation delay in the 2026 Bundibugyo outbreak, DRC"
+author:
+  - "Oluwafemi Samson Olagbami"
+  - "Humphrey Rop"
+  - "Imelda Laetitia Simboro"
+  - "Jonathan Boakye-Yiadom"
+subtitle: "Team TAUS. Advisers: Dr James Azam, Andrej Jarynowski. Preliminary results, November 2026"
+format:
+  pdf:
+    documentclass: article
+    papersize: a4
+    fontsize: 10pt
+    geometry: ["margin=1.7cm"]
+    linestretch: 1.0
+    number-sections: false
+    colorlinks: true
+    cite-method: natbib
+    biblio-style: unsrtnat
+    pdf-engine: pdflatex
+    latex-auto-install: false
+    keep-tex: false
+    fig-pos: "H"
+    include-in-header:
+      - text: |
+          \usepackage{booktabs,array,float,amssymb,tikz,listings,enumitem}
+          \usetikzlibrary{arrows.meta,positioning}
+          \input{../manuscript/numbers.tex}
+          \newcommand{\Rt}{R_{\mathrm{e}}}
+          \setlist{nosep,leftmargin=1.3em}
+          \lstset{language=R,basicstyle=\ttfamily\fontsize{6.4}{7.4}\selectfont,breaklines=true,numbers=left,numberstyle=\tiny\color{gray},numbersep=4pt,frame=single,rulecolor=\color{gray!50},commentstyle=\color{green!35!black}\itshape,keywordstyle=\color{blue!50!black},showstringspaces=false,columns=fullflexible,keepspaces=true}
+execute:
+  echo: false
+---
+
+<!-- Generated numbers: every value in the text is a LaTeX macro from ../manuscript/numbers.tex, written by the R analysis
+     (taus_all_in_one.R or R/07_figures_tables.R). Run the R script first, then:  quarto render <this file>.qmd -->
+
+**Bottom line.** If isolation of symptomatic cases is 80% effective, cutting the mean delay from onset to isolation from 7 to 5 days would avert about `\pctMedEightyFive{}`{=latex} of the next 12 months' cases and from 7 to 3 days about `\pctMedEightyThree{}`{=latex}, turning a plateau ($\Rt{}\approx\fitBReAfterMed{}$) into decline. Even at 50% effectiveness a 3-day delay averts `\pctMedFiftyThree{}`{=latex}. The effect is large because the outbreak sits at the epidemic threshold, and it reverses if the true current delay is already under 5 days, so the delay must be measured.
+
+# Question and approach {#question-and-approach .unnumbered}
+
+By 12 September 2026 the DRC had `\nConfirmed{}`{=latex} confirmed cases and a modelled incidence of about `\fitBincEndMed{}`{=latex} new cases per day. We asked how many cases would be prevented, and how much sooner transmission would end, if the mean delay from symptom onset to isolation fell from 7 to 5 or 3 days, with isolation that is 50%, 80% or 100% effective (reducing transmission of isolated cases by that fraction). We used a deterministic susceptible--exposed--infectious--isolated--removed (SEIQR) model (Fig. `\ref{fig:model}`{=latex}) with isolation rate $\tau=1/\text{delay}$; isolated people transmit at $1-\epsilon$ of the rate of others, so $\Rt{}=(\beta/\gamma)\{1-\epsilon\,\tau/(\tau+\gamma)\}$ (details in the manuscript appendix). The model was fitted by maximum likelihood to confirmed cases by report date up to 12 September [@bvdoutbreaksize2026], allowing one change in transmission (cross-checked against the onset curve corrected for reporting delay). It fitted well (95% predictive coverage `\fitBcover{}`{=latex}). Transmission grew ($\Rt{}$ `\fitBReBeforeMed{}`{=latex}) until about `\fitBtc{}`{=latex} and has since plateaued ($\Rt{}$ `\fitBReAfter{}`{=latex}).
+
+```{=latex}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[node distance=1.25cm,>=Stealth,box/.style={draw,minimum size=0.6cm,inner sep=2pt},every node/.style={font=\footnotesize}]
+\node[box](S){S};\node[box,right=of S](E){E};\node[box,right=of E,draw=red!70!black,thick](I){I};\node[box,right=of I](R){R};\node[box,above=0.7cm of I,draw=red!70!black,thick](Q){Q};
+\draw[->](S)--node[above]{$\lambda$}(E);\draw[->](E)--node[above]{$\sigma$}(I);\draw[->](I)--node[above]{$\gamma$}(R);\draw[->](I)--node[left]{$\tau=1/\text{delay}$}(Q);\draw[->](Q)-|node[above,pos=0.2]{$\gamma$}(R);
+\node[right=0.8cm of R,align=left]{$\lambda=\beta[I+(1-\epsilon)Q]/N$; $\epsilon$ = isolation effectiveness};
+\end{tikzpicture}\caption{Model structure; the intervention is the flow $I\to Q$.}\label{fig:model}\end{figure}
+```
+# Scenarios and uncertainty {#scenarios-and-uncertainty .unnumbered}
+
+Nine scenarios (delay 7, 5, 3 days $\times$ $\epsilon$ 50, 80, 100%) start on 12 September 2026. Each of `\nDraws{}`{=latex} paired draws combines the fitted growth rate and incidence with latent (mean 6.3 d, range 4.0--10.1) and infectious periods (mean 7 d, range 5--10) drawn from triangular distributions [@ebengo2026; @chowell2014]; transmission is calibrated so the 7-day baseline reproduces the fitted growth, and only the delay changes between scenarios. Outcomes: cumulative symptomatic cases over 12 months, cases averted versus the 7-day delay, and months until fewer than one exposed or infectious person remains. We also ran a stochastic version (`\nStoch{}`{=latex} replicates), partial-rank-correlation and `\nVariants{}`{=latex} structural sensitivity analyses, and an out-of-sample forecast check. All code is in R; the repository regenerates every number and figure.
+
+# Results {#results .unnumbered}
+
+```{=latex}
+\relax\begin{table}[H]\centering\scriptsize\caption{Results (median and 95\% uncertainty interval, \nDraws{} paired draws; $^\dagger$ cases averted $\times$ \cfrAssumed, illustrative).}
+\resizebox{\textwidth}{!}{\input{../results/tables/scenarios.tex}}\end{table}
+```
+With a 7-day delay the model projects `\baseCases{}`{=latex} cases over 12 months and transmission that persists beyond five years. At 80% effectiveness a 5-day delay lowers $\Rt{}$ to `\ReMedEightyFive{}`{=latex} and a 3-day delay to `\ReMedEightyThree{}`{=latex}, with transmission ending after a median of `\durEightyFive{}`{=latex} and `\durEightyThree{}`{=latex} months. At 50% effectiveness the corresponding times are `\durFiftyFive{}`{=latex} and `\durFiftyThree{}`{=latex} months; at 100% they are `\durHundredFive{}`{=latex} and `\durHundredThree{}`{=latex} months. Returns diminish: the first two days saved (7 to 5) avert more than the next two.
+
+![Projected new symptomatic cases per day (median and 95% UI, log scale) from 12 September 2026.](../figures/fig3_trajectories.pdf){width="97%"}
+
+![(a) Percent of 12-month cases averted relative to a 7-day delay. (b) Probability transmission has ended, by months.](../figures/fig4_averted_duration.pdf){width="97%"}
+
+# How robust is this? {#how-robust-is-this .unnumbered}
+
+The stochastic model gave the same medians (ratio `\stochRatioMin{}`{=latex}--`\stochRatioMax{}`{=latex}). The isolation delay (partial rank correlation `\prccIsolationDelay{}`{=latex}) and effectiveness (`\prccIsolationEffectiveness{}`{=latex}) dominate the uncertainty, followed by baseline growth (`\prccGrowthRate{}`{=latex}). Across assumptions (natural history, Erlang-distributed delays, delay defined among isolated cases, 90-day roll-out) the 5-day benefit stayed between `\varFiveMin{}`{=latex} and `\varFiveMax{}`{=latex}% and the 3-day benefit between `\varThreeMin{}`{=latex} and `\varThreeMax{}`{=latex}%. **The exception is the baseline delay:** if the true current delay were 4.6 days, a "5-day" target would increase cases (percentage averted: `\varBaseFourFive{}`{=latex}). A forecast using data to 12 September overestimated the next 46 days of cases by `\valErrLong{}`{=latex}, so absolute counts should be read as conditional on the plateau.
+
+# Decision relevance and limits {#decision-relevance-and-limits .unnumbered}
+
+Shortening the delay (community alert networks, decentralised sampling, rapid results, nearby isolation capacity) is worth the most when isolation is also effective; a quick delay with poor isolation helps less. Percent reductions apply while the outbreak is near $\Rt{}\approx1$; at higher $\Rt{}$ a 3-day delay alone suffices only if baseline $\Rt{}\le\critReEightyThree{}$ (80% effectiveness). Limits: the 7-day baseline comes from the project brief and is not confirmed; isolation effectiveness is assumed, not estimated; infectiousness is constant and contact tracing, funerals and spatial structure are omitted; national data are treated as homogeneous. Code and data: repository README (URL to be added).
+
+```{=latex}
+\clearpage
+```
+```{=latex}
+\bibliographystyle{unsrtnat}\bibliography{../manuscript/references}
+```

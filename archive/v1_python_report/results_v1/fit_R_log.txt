@@ -1,0 +1,71 @@
+Harmonisation break: 2026-07-22  printed new cases that day: 97 
+Reporting delay (onset -> in the SitRep onset curve): Weibull shape 1.71 scale 9.5 d, mean 8.5 d; 50% by 7 d, 90% by 15 d
+Fit B: 96 report intervals; removed 272 retrospective cases (369 reported - 97 new) on 2026-07-22
+
+==== Fit A: onset curve (truncation-corrected) ====
+constant beta : nll 390.79  beta 0.2602  r 0.0083/d  k 35.4
+changepoint   : nll 381.53  change on 2026-07-03  beta1 0.2881 -> beta2 0.2498  r 0.0183 -> 0.0044 /d
+AIC constant 787.6  AIC changepoint 773.1  (delta 14.5)
+tc 95% profile interval: 2026-06-28 to 2026-08-02 
+
+==== Fit B: confirmed increments by report date ====
+constant beta : nll 417.27  beta 0.2669  r 0.0108/d  k 14.2
+changepoint   : nll 407.59  change on 2026-07-25  beta1 0.2861 -> beta2 0.2382  r 0.0176 -> 0.0000 /d
+AIC constant 840.5  AIC changepoint 825.2  (delta 15.4)
+tc 95% profile interval: 2026-07-18 to 2026-08-07 
+
+Drawing parameter uncertainty ...
+                      [,1]                                 
+dataset               A: onset curve (truncation-corrected)
+n_obs                 105                                  
+nll_const             390.7945                             
+nll_change            381.5320                             
+AIC_const             787.5890                             
+AIC_change            773.0640                             
+change_date           2026-07-05                           
+change_date_95        2026-06-28 to 2026-08-02             
+r_before              0.0169 (0.0112 to 0.0234)            
+r_after               0.0040 (-0.0015 to 0.0065)           
+Re_before             1.19 (1.13 to 1.27)                  
+Re_after              1.04 (0.98 to 1.07)                  
+beta_before           0.2840 (0.2681 to 0.3026)            
+beta_after            0.2487 (0.2342 to 0.2553)            
+incidence_12Sep       63.5 (54.5 to 70.8)                  
+p_growth_after_change 0.947                                
+                      [,2]                                         
+dataset               B: confirmed by report date (break-corrected)
+n_obs                  96                                          
+nll_const             417.2731                                     
+nll_change            407.5949                                     
+AIC_const             840.5462                                     
+AIC_change            825.1899                                     
+change_date           2026-07-24                                   
+change_date_95        2026-07-18 to 2026-08-07                     
+r_before              0.0177 (0.0140 to 0.0216)                    
+r_after               0.0004 (-0.0062 to 0.0058)                   
+Re_before             1.20 (1.16 to 1.25)                          
+Re_after              1.00 (0.93 to 1.06)                          
+beta_before           0.2862 (0.2759 to 0.2975)                    
+beta_after            0.2391 (0.2221 to 0.2534)                    
+incidence_12Sep       83.0 (67.9 to 99.8)                          
+p_growth_after_change 0.556                                        
+
+Beta for each isolation effectiveness (refit):
+ fit eps      nll beta_before beta_after r_before r_after Re_before Re_after
+   A 0.5 381.6025      0.2354     0.2011   0.0185  0.0046    1.2357   1.0560
+   B 0.5 407.6029      0.2334     0.1912   0.0177  0.0003    1.2255   1.0040
+   A 0.8 381.5320      0.2881     0.2498   0.0183  0.0044    1.2099   1.0491
+   B 0.8 407.5949      0.2861     0.2382   0.0176  0.0000    1.2016   1.0003
+   A 1.0 381.4489      0.3387     0.2978   0.0182  0.0043    1.1853   1.0422
+   B 1.0 407.5984      0.3368     0.2847   0.0175 -0.0003    1.1787   0.9966
+
+Positivity (new confirmed / tests analysed):
+ new_confirmed tests_analysed positivity_pct tests_per_day
+           987           4365           22.6         167.9
+          1996           9102           21.9         293.6
+          2512          13373           18.8         431.4
+          1014           5927           17.1         493.9
+null device 
+          1 
+
+Finished in 1.8 minutes

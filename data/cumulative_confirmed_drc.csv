@@ -1,0 +1,9 @@
+date,cum_confirmed_drc,used_for_calibration,source
+2026-05-15,8,no,"Akem & Oben 2026, PLOS Glob Public Health 6(8):e0006680"
+2026-05-27,125,no,"Akem & Oben 2026, PLOS Glob Public Health 6(8):e0006680"
+2026-05-29,321,no,"CDC-sourced table reproduced on Wikipedia '2026 Central Africa Ebola epidemic' (secondary)"
+2026-06-02,363,yes,"Zomahoun et al. 2026, MMWR 75:293-294 (DRC confirmed; 378 incl. Uganda)"
+2026-08-21,5458,yes,"Kabasele et al. 2026, MMWR 75(35):554-556"
+2026-09-07,6757,yes,"UKHSA Outbreaks under monitoring, week 36 2026 (DRC)"
+2026-09-27,8116,yes,"UKHSA Outbreaks under monitoring, week 39 2026 (DRC)"
+2026-10-28,10274,yes,"CDC Ebola situation summary, data as of 28 Oct 2026 (DRC)"

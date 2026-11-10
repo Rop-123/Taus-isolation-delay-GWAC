@@ -1,0 +1,9 @@
+parameter,symbol,central,low,high,distribution,source
+mean latent period (days),1/sigma,6.3,4.0,10.1,triangular,"Akilimali et al. 2026 model input (6.3); upper bound from Chowell & Nishiura 2014 (latent 10.1)"
+mean infectious period (days),1/gamma,7.0,5.0,10.0,triangular,"Akilimali et al. 2026 model input (7); Chowell & Nishiura 2014 (6.5)"
+mean infectious period after isolation (days),1/gamma_iso,tied to 1/gamma,,,same draw as 1/gamma,assumption
+current growth rate of incidence (per day),r,estimated from data,,,normal (mean, SE from log-linear fit),"data/cumulative_confirmed_drc.csv"
+mean onset-to-isolation delay (days),1/tau,7/5/3,,,scenario,"Study brief (7 d baseline); Akilimali et al. 2026 reports onset-to-sample mean 4.6 d and onset-to-result mean 8.6 d"
+isolation effectiveness,epsilon,0.5/0.8/1.0,,,scenario,"Study design (worst/base/best)"
+population at risk,N,1e7,,,fixed,"assumption; depletion is negligible"
+initial daily symptomatic incidence,inc0,estimated from data,,,fixed,"last interval of cumulative confirmed series"

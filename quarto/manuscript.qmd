@@ -1,0 +1,376 @@
+---
+title: "How fast is fast enough? The epidemiological benefit of shortening the symptom-onset-to-isolation delay in the 2026 Bundibugyo virus disease outbreak, Democratic Republic of the Congo: a transmission-modelling study"
+author:
+  - "Oluwafemi Samson Olagbami"
+  - "Humphrey Rop"
+  - "Imelda Laetitia Simboro"
+  - "Jonathan Boakye-Yiadom"
+subtitle: "Team TAUS, MPPR 2026 group project. Advisers: Dr James Azam, Andrej Jarynowski. Correspondence: olagbami.samfem@gmail.com. Preliminary results, November 2026"
+format:
+  pdf:
+    documentclass: article
+    papersize: a4
+    fontsize: 11pt
+    geometry: ["margin=2.4cm"]
+    linestretch: 1.3
+    number-sections: true
+    colorlinks: true
+    cite-method: natbib
+    biblio-style: unsrtnat
+    pdf-engine: pdflatex
+    latex-auto-install: false
+    keep-tex: false
+    fig-pos: "H"
+    include-in-header:
+      - text: |
+          \usepackage{booktabs,array,float,amssymb,tikz,listings,enumitem}
+          \usetikzlibrary{arrows.meta,positioning}
+          \input{../manuscript/numbers.tex}
+          \newcommand{\Rt}{R_{\mathrm{e}}}
+          \setlist{nosep,leftmargin=1.3em}
+          \lstset{language=R,basicstyle=\ttfamily\fontsize{6.4}{7.4}\selectfont,breaklines=true,numbers=left,numberstyle=\tiny\color{gray},numbersep=4pt,frame=single,rulecolor=\color{gray!50},commentstyle=\color{green!35!black}\itshape,keywordstyle=\color{blue!50!black},showstringspaces=false,columns=fullflexible,keepspaces=true}
+execute:
+  echo: false
+---
+
+<!-- Generated numbers: every value in the text is a LaTeX macro from ../manuscript/numbers.tex, written by the R analysis
+     (taus_all_in_one.R or R/07_figures_tables.R). Run the R script first, then:  quarto render <this file>.qmd -->
+
+# Abstract {#abstract .unnumbered}
+
+**Background.** The 2026 outbreak of Bundibugyo virus disease (BVD) in the Democratic Republic of the Congo (DRC) has exceeded 10 000 confirmed cases. Every day between symptom onset and isolation is a day of possible onward transmission, yet the value of shortening that delay when isolation is imperfect has not been quantified for this outbreak. **Methods.** We built a deterministic susceptible--exposed--infectious--isolated--removed (SEIQR) model in which the isolation rate is the inverse of the mean onset-to-isolation delay and isolated people transmit at a fraction $1-\epsilon$ of the rate of non-isolated people. We fitted it by maximum likelihood to national surveillance data up to 12 September 2026 (confirmed cases by onset date, corrected for reporting delay, and by report date), allowing one change in transmission. We simulated nine scenarios (delays of 7, 5 and 3 days $\times$ isolation effectiveness $\epsilon$ of 50%, 80% and 100%) from 12 September, propagating fitted and literature uncertainty through `\nDraws{}`{=latex} paired parameter draws, a stochastic version of the model, global and structural sensitivity analyses, and an out-of-sample forecast check. **Findings.** Transmission grew ($\Rt{}\approx\fitBReBeforeMed{}$) until about `\fitBtc{}`{=latex} and then plateaued ($\Rt{}\approx\fitBReAfterMed{}$); with a 7-day delay the model projected `\baseCases{}`{=latex} symptomatic cases over 12 months (median and 95% uncertainty interval \[UI\]). Reducing the mean delay to 5 days averted `\pctMedFiftyFive{}`{=latex}, `\pctMedEightyFive{}`{=latex} and `\pctMedHundredFive{}`{=latex} of cases at 50%, 80% and 100% isolation effectiveness; reducing it to 3 days averted `\pctMedFiftyThree{}`{=latex}, `\pctMedEightyThree{}`{=latex} and `\pctMedHundredThree{}`{=latex}. At 80% effectiveness, $\Rt{}$ fell from 1.00 to `\ReMedEightyFive{}`{=latex} (5 days) and `\ReMedEightyThree{}`{=latex} (3 days), and the median time to the end of transmission was `\durEightyFive{}`{=latex} and `\durEightyThree{}`{=latex} months, against more than 60 months at 7 days. Delay and isolation effectiveness were the dominant uncertainties (partial rank correlations `\prccIsolationDelay{}`{=latex} and `\prccIsolationEffectiveness{}`{=latex}). The benefit of a 5-day target was reversed if the true current delay were already below 5 days. A forecast made with data to 12 September overestimated the next 46 days of cases by `\valErrLong{}`{=latex}. **Interpretation.** Faster isolation can turn a plateau into decline, but quality of isolation matters as much as speed, and the size of the effect rests on the outbreak currently sitting at the epidemic threshold. Measuring the actual onset-to-isolation delay should be a surveillance priority. **Funding.** None declared (to be confirmed by the authors).\
+**Keywords:** Bundibugyo virus; Ebola disease; isolation; transmission model; scenario analysis; uncertainty; reproducibility
+
+# Key points {#key-points .unnumbered}
+
+-   **Question:** how many cases would be prevented, and how much sooner would transmission end, if the mean delay from symptom onset to isolation in the DRC fell from 7 to 5 or 3 days, allowing for isolation that is only 50--100% effective?
+
+-   **Answer:** about `\pctMedEightyFive{}`{=latex} (5 days) and `\pctMedEightyThree{}`{=latex} (3 days) of the next 12 months' cases at 80% effectiveness; `\pctMedFiftyThree{}`{=latex} even at 50% effectiveness with a 3-day delay.
+
+-   **Caveats:** effects are large because the outbreak is near the threshold $\Rt{}\approx1$; the baseline delay is poorly measured; absolute counts are conditional on a plateau that later eased.
+
+```{=latex}
+\clearpage
+```
+# Introduction
+
+In May 2026 the DRC declared an outbreak of Ebola disease caused by Bundibugyo virus, which has become the second-largest Ebola-disease outbreak on record, with a crude case fatality of about `\crudeCFR{}`{=latex} among confirmed cases [@zomahoun2026; @kabasele2026]. By 28 October 2026, 10 274 cases and 4 992 deaths had been confirmed in the DRC [@cdcsituation2026]. Control relies on finding cases, isolating them, and tracing their contacts. Operational reviews in August found that all contact-tracing indicators were below target, that only 15--20% of new cases were known contacts, that treatment-unit occupancy averaged 64% (with some facilities above 100%), and that 59% of confirmed deaths occurred outside treatment units [@kabasele2026]. The delay between symptom onset and isolation is therefore a central operational quantity: community engagement, decentralised testing, rapid result return and transit centres all aim to shorten it. In the first month of the outbreak the mean delay from first symptoms to sampling was reported as 7.4 days, and a preprint from the response gives 4.6 days from onset to sampling but 8.6 days to the test result [@ebengo2026].
+
+Field teams cannot measure what a shorter delay would buy; a model can. Theory and experience from past Ebola outbreaks show that the combination of how quickly cases are isolated and how completely isolation prevents transmission determines whether an outbreak is controllable [@fraser2004; @chowell2014; @pandey2014; @kucharski2015]. Scenario projections for the present outbreak have varied the *fraction* of symptomatic people isolated while holding the delay fixed at two days and assuming that isolated people transmit nothing [@mooring2026]. To our knowledge, the benefit of shortening the delay itself, when isolation is imperfect and when the model is anchored to the observed course of this outbreak, has not been reported.
+
+**Research question.** Among symptomatic infectious people in the DRC outbreak, how would reducing the mean onset-to-isolation delay from 7 days to 5 and 3 days change cumulative cases and outbreak duration, under worst-, base- and best-case isolation effectiveness (50%, 80%, 100%)? We answer it with a transmission model fitted to surveillance data and subjected to explicit tests of its own weaknesses: reporting delay, structural assumptions about the delay distribution, an out-of-sample forecast, and a stochastic version. The analysis is fully scripted in R so that every figure, table and number in this paper can be regenerated from the data folder.
+
+# Methods
+
+## Design, data and ethics
+
+This is a modelling study of publicly available, aggregated surveillance data; no individual-level data were used and no ethical approval was required (to be confirmed by the authors' institution). The scenario analysis is counterfactual: because the surveillance data end on **12 September 2026**, scenarios are applied from that date. Later official cumulative counts (27 September and 28 October) were withheld from fitting and used only for validation.
+
+Data are the cleaned national surveillance streams compiled from the daily situation reports (SitReps) of the DRC Institut National de Santé Publique (INSP) and INRB transcriptions by the BVDOutbreakSize project [@bvdoutbreaksize2026], as of 12 September 2026 (`\nConfirmed{}`{=latex} confirmed cases and `\nDeaths{}`{=latex} confirmed deaths). Table `\ref{tab:data}`{=latex} lists what was used and what was not. The README of the data set warns of changing case definitions, retrospective harmonisation, a digitised onset curve and right-truncation of recent onset dates; we address each below.
+
+```{=latex}
+\relax\begin{table}[H]\centering\small
+\caption{Data used. Streams not listed (suspected cases, bed capacity, treatment-centre movements) stop in July or August or change definition, and suspected and confirmed cases must not be mixed in one likelihood.}\label{tab:data}
+\begin{tabular}{@{}p{3.5cm}p{2.7cm}p{8.3cm}@{}}\toprule
+Stream & Period & Use \\\midrule
+Confirmed cases by symptom-onset date (SitRep 121; 55 earlier vintages) & 25 May--6 Sep (105 days) & \textbf{Fit A}. Digitised bar chart (about 66\% of confirmed cases have a recorded onset date). The 55 vintages give the reporting-delay curve that corrects the incomplete last three weeks. \\
+Cumulative confirmed cases (by report date) & 2 Jun--12 Sep (96 report intervals) & \textbf{Fit B (primary)}. Increments between report dates. The 22 July harmonisation step (369 reported, 97 new) is replaced by the printed 97, removing 272 retrospective cases. \\
+Samples analysed per day & 1 Jun--12 Sep & Diagnostic only: positivity (new confirmed / samples analysed). \\
+Confirmed deaths (cumulative) & 14 May--12 Sep & Crude fatality ratio for an illustrative deaths-averted figure. \\
+Official cumulative confirmed cases, 27 Sep and 28 Oct & -- & Out-of-sample validation only \citep{ukhsa2026,cdcsituation2026}. \\\bottomrule
+\end{tabular}\end{table}
+```
+## Model
+
+We use a deterministic compartmental model with susceptible ($S$), exposed ($E$), infectious but not yet isolated ($I$), isolated infectious ($Q$) and removed ($R$) people (Figure `\ref{fig:model}`{=latex}):
+
+```{=latex}
+\begin{align}
+\dot S &= -\lambda S, & \dot E &= \lambda S-\sigma E, & \dot I &= \sigma E-(\tau+\gamma)I, \notag\\
+\dot Q &= \tau I-\gamma Q, & \dot R &= \gamma(I+Q), & \lambda &= \beta\,\frac{I+(1-\epsilon)Q}{N}, \label{eq:model}
+\end{align}
+```
+where $\sigma^{-1}$ is the mean latent period, $\gamma^{-1}$ the mean infectious period (the same for isolated people), $\beta$ the transmission rate, $N$ the population at risk and $\epsilon\in[0,1]$ the *isolation effectiveness*: isolated people transmit at a fraction $1-\epsilon$ of the rate of non-isolated people. The intervention is the isolation rate $\tau=1/\text{delay}$, so the mean delay studied is the mean time to isolation of a person who remains infectious and not removed. Symptomatic cases accumulate as $\dot C=\sigma E$. With $S\approx N$ the reproduction number is
+
+```{=latex}
+\begin{equation}
+\Rt=\frac{\beta}{\gamma}\left(1-\epsilon\,\frac{\tau}{\tau+\gamma}\right), \label{eq:Re}
+\end{equation}
+```
+and the share of cases isolated before recovery or death is $\tau/(\tau+\gamma)$ (Appendix `\ref{app:math}`{=latex}). With a 7-day delay and a 7-day infectious period this share is `\aIsoSeven{}`{=latex}; it is `\aIsoFive{}`{=latex} at 5 days and `\aIsoThree{}`{=latex} at 3 days. This competing-risk property of an exponential delay matters for interpretation and is tested by the structural analyses below.
+
+```{=latex}
+\begin{figure}[H]\centering
+\begin{tikzpicture}[node distance=1.55cm,>=Stealth,box/.style={draw,minimum size=0.75cm,inner sep=2pt},every node/.style={font=\small}]
+\node[box](S){S}; \node[box,right=of S](E){E}; \node[box,right=of E,draw=red!70!black,thick](I){I};
+\node[box,right=of I](R){R}; \node[box,above=0.95cm of I,draw=red!70!black,thick](Q){Q};
+\draw[->](S)--node[above]{$\lambda$}(E); \draw[->](E)--node[above]{$\sigma$}(I);
+\draw[->](I)--node[above]{$\gamma$}(R); \draw[->](I)--node[left]{$\tau=1/\text{delay}$}(Q);
+\draw[->](Q)-|node[above,pos=0.2]{$\gamma$}(R);
+\node[right=1.1cm of R,align=left,font=\footnotesize,text width=5.3cm]{$\lambda=\beta\,[\,I+(1-\epsilon)Q\,]/N$\\ $\epsilon$ = isolation effectiveness\\ red = studied intervention};
+\end{tikzpicture}
+\caption{Model structure. The studied intervention is the flow from $I$ to $Q$ at rate $\tau=1/\text{delay}$; isolation is imperfect when $\epsilon<1$.}\label{fig:model}
+\end{figure}
+```
+## Parameters
+
+Table `\ref{tab:params}`{=latex} gives all inputs. Natural-history values come from the model inputs of the response preprint [@ebengo2026] and the Ebola review of Chowell and Nishiura [@chowell2014]; ranges are triangular distributions that span published estimates (latent period 4.0--10.1 days, mean 6.3; infectious period 5--10 days, mean 7). We did not use the systematic-review database of Nash et al. [@nash2024], which should replace these ranges in future work. The baseline delay of 7 days is the value in the study brief (first-month mean 7.4 days); we could not locate that figure in the primary source available to us, so two alternative baselines (4.6 and 8.6 days, the preprint's onset-to-sample and onset-to-result means) are analysed as sensitivity cases.
+
+```{=latex}
+\relax\begin{table}[H]\centering\small
+\caption{Parameters and their sources. UI: uncertainty interval.}\label{tab:params}
+\begin{tabular}{@{}p{4.1cm}p{3.6cm}p{6.6cm}@{}}\toprule
+Parameter & Value & Source / treatment \\\midrule
+Latent period $1/\sigma$ & triangular(4.0, 6.3, 10.1) d & \citep{ebengo2026,chowell2014}; fixed at 6.3 d in fitting, varied in scenarios \\
+Infectious period $1/\gamma$ & triangular(5, 7, 10) d & \citep{ebengo2026,chowell2014}; fixed at 7 d in fitting, varied in scenarios \\
+Baseline delay $1/\tau_0$ & 7 d & Study brief; 4.6 and 8.6 d in sensitivity analyses \\
+Scenario delays & 7, 5, 3 d & Study design \\
+Isolation effectiveness $\epsilon$ & 0.5, 0.8, 1.0 & Worst, base, best case \\
+Transmission $\beta$ & estimated & Fitted (Fit B) or calibrated to the fitted growth rate in each draw \\
+Starting incidence, growth rate, change date & estimated & Maximum likelihood, profile likelihood and Hessian draws \\
+Count dispersion $k$ & estimated & Negative-binomial likelihood \\
+Population $N$ & 4\,392\,200 & Ituri province (scalars file); depletion negligible, 10 million tested \\
+Crude fatality ratio & \cfrAssumed{} & 3\,475 / 7\,200 confirmed at 12 Sep; an upper bound, used only for illustration \\
+Horizon & 12 months (cases); 60 months (duration) & Study design \\\bottomrule
+\end{tabular}\end{table}
+```
+## Fitting
+
+**Reporting delay.** The onset curve is published in every SitRep, so each onset date's count is observed repeatedly as reports accumulate. We measured the share $c(L)$ of an onset day's final count already visible $L$ days later, pooling the `\nVintages{}`{=latex} vintages and taking counts at least 28 days old in the latest vintage as final. A Weibull cumulative distribution, $c(L)=1-\exp\{-((L+0.5)/s)^{\kappa}\}$, was fitted by least squares. Half of cases were visible after `\delayHalf{}`{=latex} days and 90% after `\delayNinety{}`{=latex} days (mean `\delayMean{}`{=latex} days).
+
+**Observation model and likelihood.** Counts $y$ are negative-binomial with mean $\mu$ and variance $\mu+\mu^2/k$. In Fit A (onset curve) $\mu_d=c(L_d)\,i(d)$, where $i(d)$ is the model's symptomatic incidence on day $d$ and $L_d$ the days between $d$ and the report date of 12 September. In Fit B (report date) the expected increment over a report interval is the sum, over its days $u$, of $\sum_{d\le u} i(d)\{c(u-d)-c(u-d-1)\}$, i.e. incidence convolved with the same delay. Fit B is the primary fit because it covers all confirmed cases and is not affected by truncation; Fit A is the cross-check.
+
+**Parameters estimated.** Natural-history parameters and the baseline delay are fixed at their central values; we estimate the starting incidence $i_0$, the transmission rate before ($\beta_1$) and after ($\beta_2$) a change on date $t_c$, and $k$. We compared this with constant transmission by AIC (counting $t_c$ as a parameter). Optimisation used Nelder--Mead from multiple stages; the date $t_c$ was profiled on a grid (5-day steps, refined to 1 day). Uncertainty draws sample $t_c$ with weights proportional to the profile likelihood and the other parameters from the multivariate normal given by the Hessian at that $t_c$. Model adequacy was checked by 95% predictive coverage and residual autocorrelation, and by refitting at extreme natural-history values.
+
+## Scenarios, outcomes and uncertainty propagation
+
+Each of `\nDraws{}`{=latex} draws contains the fitted post-change growth rate $r$ and incidence on 12 September $i(T)$ (jointly, from Fit B), and latent and infectious periods drawn independently from their triangular distributions. For each draw and each $\epsilon$, $\beta$ is solved so that the 7-day baseline has growth rate $r$ (the dominant eigenvalue of the linearised $(E,I,Q)$ system), the initial state is the corresponding eigenvector scaled to $i(T)$, and the three delays are then simulated by changing only $\tau$. All nine scenarios share the same draws, so cases averted are within-draw differences from the 7-day run with the same $\epsilon$. This choice means that $\beta$, and therefore $\epsilon$, are not separately identifiable from case counts: $\epsilon$ is a scenario assumption.
+
+**Outcomes.** *Primary:* cumulative symptomatic confirmed cases over the next 12 months, cases averted (absolute and percentage), and outbreak duration, defined as the first day with fewer than one exposed or infectious person within 60 months (otherwise right-censored; we report medians with censoring, and the probability of ending by 12, 24 and 60 months). *Secondary:* $\Rt{}$, probability $\Rt{}<1$, peak incidence and time to peak. Deaths averted are illustrative only (cases averted $\times$ `\cfrAssumed{}`{=latex}). Results are medians with 95% UIs (2.5th--97.5th percentiles). A policy surface (delays of 2--10 days, $\epsilon$ of 30--100%; 100 draws) gives the continuous picture.
+
+## Stochastic model
+
+A discrete-time binomial-chain version ($\Delta t=0.25$ d, same transitions as Eq. `\ref{eq:model}`{=latex}) was run for `\nStoch{}`{=latex} replicates per scenario, each with its own parameter draw. Transmission was calibrated in discrete time so that the expected growth rate equals the deterministic one (an uncorrected calibration biased results upwards in a preliminary run).
+
+## Sensitivity and structural analyses
+
+**Global:** partial rank correlation coefficients (PRCC) [@blower1994; @marino2008] for 12-month cases over `\nPRCC{}`{=latex} samples of latent period, infectious period, growth rate, starting incidence, $\epsilon\sim U(0.5,1)$ and delay $\sim U(3,7)$ days, with 300 bootstrap resamples for intervals. **Variants** (`\nVariants{}`{=latex} analyses at $\epsilon=0.8$, `\nVarDraws{}`{=latex} draws each): extreme natural-history values; growth rate and starting incidence at their 2.5th and 97.5th percentiles; fitting to the onset curve instead; true baseline delay of 4.6 or 8.6 days; Erlang-distributed delay with 3 or 10 stages (less variable delays [@lloyd2001]); delay defined as the mean time to isolation *among those isolated* ($\tau=1/D-\gamma$); a population of 10 million; and implementation ramp-up over 30 or 90 days.
+
+## Out-of-sample validation
+
+Using only data to 12 September, we forecast confirmed cases reported by 27 September and 28 October (baseline: nothing changes) and compared them with the official cumulative counts [@ukhsa2026; @cdcsituation2026], together with a benchmark of constant incidence equal to the mean of the last 14 days.
+
+## Software and reproducibility
+
+Everything was run in R `\rVersion{}`{=latex} with the `deSolve` package (version `\desolveVersion{}`{=latex}) [@rcore; @desolve2010]; base R provides optimisation, random numbers and graphics. All random seeds are fixed. Eight scripts (`R/00_functions.R` to `R/07_figures_tables.R`) run in order from `R/run_all.R`; `tests/test_model.R` checks the code against analytic results (e.g. $\Rt{}=1$ exactly when the growth rate is zero; stochastic mean within 5% of the deterministic solution). The scripts write every table, figure and in-text number (as LaTeX macros) used here. The code is listed in Appendix D and the repository README gives run times and the directory layout (Appendix C).
+
+# Results
+
+## Surveillance data and model fit
+
+Confirmed cases per day rose from about 35--40 in early June to a plateau of about 80 per day from late July (@fig-fit). Reports of onset dates reach their final value slowly: the fitted reporting delay has a mean of `\delayMean{}`{=latex} days, so the apparent fall in the last three weeks of the onset curve is a reporting artefact, which the fitted model reproduces (@fig-fit b). A change in transmission was strongly supported in both datasets (Table `\ref{tab:fit}`{=latex}): $\Delta$AIC against constant transmission was `\fitAdAIC{}`{=latex} (onset curve) and `\fitBdAIC{}`{=latex} (report date). Growth was `\fitBrBefore{}`{=latex} per day before about `\fitBtc{}`{=latex} (95% profile interval `\fitBtcRange{}`{=latex}) and `\fitBrAfter{}`{=latex} per day afterwards in Fit B, corresponding to $\Rt{}$ of `\fitBReBefore{}`{=latex} before and `\fitBReAfter{}`{=latex} after. Fit A agreed (change about `\fitAtc{}`{=latex}, interval `\fitAtcRange{}`{=latex}; growth after `\fitArAfter{}`{=latex}; $\Rt{}$ `\fitAReAfter{}`{=latex}). The model's incidence on 12 September was `\fitBincEnd{}`{=latex} cases per day (Fit B) or `\fitAincEnd{}`{=latex} (Fit A, which covers only cases with a recorded onset date, about `\shareOnset{}`{=latex} of confirmed cases).
+
+```{=latex}
+\relax\begin{table}[H]\centering\scriptsize
+\caption{Fitted parameters (median and 95\% uncertainty interval of draws combining the profile over the change date and the Hessian approximation), with isolation effectiveness 80\% and baseline delay 7 days. Growth rates are per day. Fits for 50\% and 100\% give the same growth rates (Appendix Table~\ref{tab:byeff}).}\label{tab:fit}
+\resizebox{\textwidth}{!}{\input{../results/tables/fit.tex}}\end{table}
+```
+![Model fit. (a) Reporting delay measured from 55 SitRep vintages. (b) Fit A: confirmed cases by onset date; open circles are the incomplete last three weeks; orange is the model as it would be reported, blue dashed the true onset incidence it implies. (c) Fit B: confirmed cases per day by report date (22 July step removed); dotted line marks the estimated change date. (d) Profile log-likelihood for the date of the change in transmission (dashed line: 95% limit).](../figures/fig2_fit.pdf){#fig-fit width="98%"}
+
+Both fits were adequate: 95% negative-binomial predictive intervals covered `\fitAcover{}`{=latex} (Fit A) and `\fitBcover{}`{=latex} (Fit B) of observations, with lag-1 residual autocorrelation of `\fitAacf{}`{=latex} and `\fitBacf{}`{=latex}. Refitting Fit B at the four extreme corners of the natural-history ranges changed the post-change growth rate only between `\nhRMin{}`{=latex} and `\nhRMax{}`{=latex} per day and the 12 September incidence between `\nhIncMin{}`{=latex} and `\nhIncMax{}`{=latex} (Appendix Table `\ref{tab:nh}`{=latex}), which supports using these two quantities as data-determined inputs to the scenarios. Over the same period testing expanded from `\testsJun{}`{=latex} to `\testsSep{}`{=latex} samples per day and positivity fell from `\posJun{}`{=latex}% to `\posSep{}`{=latex}% (Appendix Table `\ref{tab:pos}`{=latex}): confirmed counts grew much more slowly than testing, so the plateau is unlikely to be purely a laboratory-capacity artefact, although the data cannot show whether true incidence was flat or falling.
+
+## Baseline: a 7-day delay
+
+With the delay unchanged the model projects a plateau: median $\Rt{}$ 1.00, with a proportion `\pReBaseBelow{}`{=latex} of draws below 1, and `\baseCases{}`{=latex} symptomatic cases in the next 12 months (median and 95% UI). The interval is wide because the uncertainty in the growth rate (about $\pm0.006$ per day) compounds over a year. Transmission had ended within five years in only a proportion `\pEndBaseSixty{}`{=latex} of draws; in the remainder it persisted.
+
+## Scenarios
+
+Shortening the delay converted the plateau into decline in all eight alternative scenarios (Table `\ref{tab:scen}`{=latex}, @fig-traj and @fig-avert). At 80% effectiveness, a 5-day delay averted `\pctMedEightyFive{}`{=latex} of cases ($\approx$`\avertedEightyFive{}`{=latex} cases) and a 3-day delay averted `\pctMedEightyThree{}`{=latex} (`\avertedEightyThree{}`{=latex} cases). The corresponding $\Rt{}$ were `\ReEightyFive{}`{=latex} and `\ReEightyThree{}`{=latex}. At 50% effectiveness the benefit was smaller but still substantial (`\pctMedFiftyFive{}`{=latex} for 5 days; `\pctMedFiftyThree{}`{=latex} for 3 days), and at 100% it was `\pctMedHundredFive{}`{=latex} and `\pctMedHundredThree{}`{=latex}. Illustratively, applying the crude fatality ratio of `\cfrAssumed{}`{=latex}, the 3-day scenario at 80% effectiveness corresponds to about `\deathsEightyThree{}`{=latex} fewer deaths.
+
+```{=latex}
+\relax\begin{table}[H]\centering\scriptsize
+\caption{Scenario results from 12 September 2026 (median and 95\% UI over \nDraws{} paired draws). Months to end: first day with fewer than one exposed or infectious person; $>$60 means not ended within five years in at least half of draws. $^\dagger$Cases averted $\times$ \cfrAssumed; illustrative upper bound.}\label{tab:scen}
+\resizebox{\textwidth}{!}{\input{../results/tables/scenarios.tex}}\end{table}
+```
+Time to the end of transmission was even more sensitive to the delay than cases. At 80% effectiveness the median was `\durEightyThree{}`{=latex} months (UI `\durLoEightyThree{}`{=latex}--`\durHiEightyThree{}`{=latex}) at 3 days against `\durEightyFive{}`{=latex} months (`\durLoEightyFive{}`{=latex}--`\durHiEightyFive{}`{=latex}) at 5 days and more than 60 months at 7 days (@fig-avert b). With only 50% effectiveness a 3-day delay still ended transmission in a median of `\durFiftyThree{}`{=latex} months, whereas a 5-day delay needed `\durFiftyFive{}`{=latex} months (UI `\durLoFiftyFive{}`{=latex} to `\durHiFiftyFive{}`{=latex}). The probability that transmission had ended within two years was `\pEndYearTwoEightyThree{}`{=latex} (3 days) and `\pEndYearTwoEightyFive{}`{=latex} (5 days) at 80% effectiveness, and `\pEndYearTwoFiftyThree{}`{=latex} and `\pEndYearTwoFiftyFive{}`{=latex} at 50%.
+
+![Projected new symptomatic cases per day from 12 September 2026 for the three delays (median and 95% UI; logarithmic scale; dotted line: one case per day) at each isolation effectiveness.](../figures/fig3_trajectories.pdf){#fig-traj width="\\textwidth"}
+
+![(a) Percentage of 12-month cases averted relative to the 7-day delay with the same isolation effectiveness (median, 95% UI). (b) Probability that transmission has ended, by months from 12 September 2026, for the nine scenarios (colour: delay; line type: effectiveness).](../figures/fig4_averted_duration.pdf){#fig-avert width="\\textwidth"}
+
+The continuous surface (@fig-surf) shows diminishing returns: at 80% effectiveness the first two days gained (7 to 5) averted `\pctMedEightyFive{}`{=latex} and the next two (5 to 3) a further 16 percentage points, and delays above 7 days increase cases steeply. Because the baseline sits at the threshold, the white contour (half of draws with $\Rt{}<1$) lies at the 7-day delay itself.
+
+![Policy surface: median percentage of 12-month cases averted relative to a 7-day delay, by delay and isolation effectiveness (100 draws per cell). Circles mark the nine scenarios; the white line marks where half of draws have $\Rt{}<1$.](../figures/fig5_policy_surface.pdf){#fig-surf width="70%"}
+
+## Stochastic check
+
+The stochastic model reproduced the deterministic medians (ratio `\stochRatioMin{}`{=latex} to `\stochRatioMax{}`{=latex} across scenarios; Table `\ref{tab:stoch}`{=latex}, @fig-stoch). At 80% effectiveness, median cases fell from `\stochBase{}`{=latex} (7 days) to `\stochFive{}`{=latex} (5 days) and `\stochThree{}`{=latex} (3 days), reductions of `\stochRedFive{}`{=latex} and `\stochRedThree{}`{=latex}. Chance events made early extinction more likely than in the deterministic model: the probability of ending within five years at 7 days was `\stochEndBase{}`{=latex} (deterministic `\pEndBaseSixty{}`{=latex}), and within two years at 5 days `\stochEndFive{}`{=latex} (deterministic `\pEndYearTwoEightyFive{}`{=latex}). The conclusions are therefore robust to demographic stochasticity.
+
+```{=latex}
+\relax\begin{table}[H]\centering\scriptsize
+\caption{Stochastic (500 replicates) and deterministic results by scenario.}\label{tab:stoch}
+\resizebox{\textwidth}{!}{\input{../results/tables/stochastic.tex}}\end{table}
+```
+![Stochastic distribution of 12-month cases (boxes: median and interquartile range; whiskers: 95% range) with the deterministic median (diamonds).](../figures/fig7_stochastic.pdf){#fig-stoch width="95%"}
+
+## Sensitivity analyses
+
+In the global analysis (@fig-sens a; Appendix Table `\ref{tab:prcc}`{=latex}) the isolation delay had the largest influence on 12-month cases (PRCC `\prccIsolationDelay{}`{=latex}), followed by isolation effectiveness (`\prccIsolationEffectiveness{}`{=latex}), baseline growth rate (`\prccGrowthRate{}`{=latex}), latent period (`\prccLatentPeriod{}`{=latex}), starting incidence (`\prccStartingIncidence{}`{=latex}) and infectious period (`\prccInfectiousPeriod{}`{=latex}). In the structural and assumption analyses (@fig-sens b; Table `\ref{tab:var}`{=latex}), percentage reductions at 80% effectiveness ranged from `\varFiveMin{}`{=latex} to `\varFiveMax{}`{=latex}% for a 5-day delay and `\varThreeMin{}`{=latex} to `\varThreeMax{}`{=latex}% for a 3-day delay, with one exception. Percentages were almost unchanged across the 95% range of starting incidence (`\varIncLoFive{}`{=latex} to `\varIncHiFive{}`{=latex}% for 5 days), although absolute counts scaled with it. Reductions were larger with less variable delays (Erlang-3: `\varErlangThreeFive{}`{=latex}%; Erlang-10: `\varErlangTenFive{}`{=latex}% at 5 days), and also when the delay was defined among isolated cases (`\varCondFive{}`{=latex}% and `\varCondThree{}`{=latex}%), because in that reading the 7-day baseline isolates only `\varCondIso{}`{=latex} of cases. They were smaller when interventions took 30 or 90 days to reach full effect (`\varRampThirtyFive{}`{=latex}% and `\varRampNinetyFive{}`{=latex}% for 5 days; `\varRampThirtyThree{}`{=latex}% and `\varRampNinetyThree{}`{=latex}% for 3 days), and were insensitive to population size (`\varPopFive{}`{=latex}%). Fitting to the onset curve gave `\varFitAFive{}`{=latex}% and `\varFitAThree{}`{=latex}% but a larger baseline case count (`\varFitABase{}`{=latex}) because its post-change growth was slightly positive. The baseline growth rate was the main source of spread in the baseline projection, ranging from `\varGrowthLoBase{}`{=latex} to `\varGrowthHiBase{}`{=latex} cases across its 95% range, while the percentage averted moved from `\varGrowthLoFive{}`{=latex} to `\varGrowthHiFive{}`{=latex}% (5 days).
+
+**The exception is the baseline delay.** If the true current mean delay were already 4.6 days (the preprint's onset-to-sample mean), a "5-day" policy would be *worse* than the status quo: cases would rise (percentage averted: `\varBaseFourFive{}`{=latex}), while a 3-day target would still avert `\varBaseFourThree{}`{=latex} percent. If the current delay were 8.6 days, the gains would be larger (5 days: 82%; 3 days: 91%). Hence the 7-day baseline must be verified.
+
+![(a) PRCC (with 95% bootstrap CI) of 12-month cases against each parameter. (b) Percentage of 12-month cases averted at 80% effectiveness under each assumption (median and 95% UI), for 5-day and 3-day delays.](../figures/fig6_sensitivity.pdf){#fig-sens width="\\textwidth"}
+
+```{=latex}
+\relax\begin{table}[H]\centering\scriptsize
+\caption{Assumption and structure analyses at 80\% isolation effectiveness: percentage of 12-month cases averted vs the (variant-specific) baseline delay; median (95\% UI) over \nVarDraws{} draws.}\label{tab:var}
+\input{../results/tables/variants.tex}\end{table}
+```
+## Out-of-sample validation
+
+Forecasts made with data to 12 September overestimated subsequent cases (Table `\ref{tab:val}`{=latex}, @fig-val). Over the next 15 days the model projected `\valModShort{}`{=latex} new confirmed cases against `\valObsShort{}`{=latex} observed (error `\valErrShort{}`{=latex}; observed outside the model's 95% UI), and over 46 days `\valModLongCI{}`{=latex} (median and 95% UI) against `\valObsLong{}`{=latex} observed (error `\valErrLong{}`{=latex}; observed inside the UI). Observed incidence fell to about `\valRateObsShort{}`{=latex} per day by 27 September and averaged `\valRateObsLong{}`{=latex} per day over 46 days, against about `\fitBincEndMed{}`{=latex} per day on 12 September. The constant-rate benchmark erred in the same direction (`\valNaiveErrLong{}`{=latex} at 46 days). The model is therefore no worse than the simplest alternative, but the later data indicate a modest decline after 12 September.
+
+```{=latex}
+\relax\begin{table}[H]\centering\scriptsize
+\caption{Out-of-sample forecast of new confirmed cases since 12 September (data to that date only). UI: parameter uncertainty; predictive interval adds negative-binomial noise. Error: (forecast $-$ observed)/observed.}\label{tab:val}
+\resizebox{\textwidth}{!}{\input{../results/tables/validation.tex}}\end{table}
+```
+![Forecast of cumulative new confirmed cases after 12 September 2026 against the official counts on 27 September and 28 October.](../figures/fig8_validation.pdf){#fig-val width="62%"}
+
+# Discussion
+
+**Principal findings.** In a model anchored to the observed course of the DRC outbreak, shortening the mean onset-to-isolation delay from 7 to 5 or 3 days turns a plateau into a decline, avoiding most of the next year's cases in every scenario tested, provided that the current delay really is about 7 days. At 80% isolation effectiveness the reductions were `\pctMedEightyFive{}`{=latex} and `\pctMedEightyThree{}`{=latex}, $\Rt{}$ fell to `\ReMedEightyFive{}`{=latex} and `\ReMedEightyThree{}`{=latex}, and the median end of transmission moved from beyond five years to about `\durEightyFive{}`{=latex} and `\durEightyThree{}`{=latex} months. Speed and quality both matter: even a 3-day delay left `\durFiftyThree{}`{=latex} months of transmission if isolation was only 50% effective, and PRCC for effectiveness was nearly as large as for the delay.
+
+**Why the effect is large, and when it would not be.** The effect on cumulative cases is large because the outbreak is close to threshold. A shorter delay raises the share of cases isolated before removal (from `\aIsoSeven{}`{=latex} to `\aIsoFive{}`{=latex} and `\aIsoThree{}`{=latex}), which lowers $\Rt{}$ by a fixed proportion: from Eq. `\eqref{eq:Re}`{=latex}, $\Rt{}$ is multiplied by $(1-\epsilon a_{\text{new}})/(1-\epsilon a_{7})$ with $a=\tau/(\tau+\gamma)$. At $\epsilon=0.8$ this factor is 0.89 for a 5-day delay and 0.73 for a 3-day delay. When baseline $\Rt{}\approx1$ any such factor produces exponential decline; when baseline $\Rt{}$ is higher it does not. Table `\ref{tab:crit}`{=latex} gives the largest baseline $\Rt{}$ that each delay could bring below 1. Before the July slowdown $\Rt{}$ was about `\fitBReBeforeMed{}`{=latex}; a 3-day delay with 80% or better isolation would then have been sufficient (threshold `\critReEightyThree{}`{=latex}), a 5-day delay would not (`\critReEightyFive{}`{=latex}). Percentage reductions over 12 months should therefore not be transferred to settings or periods with a higher $\Rt{}$.
+
+```{=latex}
+\relax\begin{table}[H]\centering\small
+\caption{Largest baseline reproduction number (with a 7-day delay) that a new delay can bring below 1, from Eq.~\eqref{eq:Re} with $\gamma=1/7$.}\label{tab:crit}
+\input{../results/tables/critre.tex}\end{table}
+```
+**What "delay" means.** In an exponential model with competing removal, the mean delay is not the mean time to isolation of those who are isolated: with a 7-day delay and a 7-day infectious period only about half of cases are isolated at all. A field-measured onset-to-isolation or onset-to-sample delay is conditional on being isolated, so the two are not interchangeable. The structural analyses bracket this: less variable delays and the conditional definition give larger benefits (up to `\varCondFive{}`{=latex}% and `\varCondThree{}`{=latex}%), not smaller, so the base-case figures are not extreme in either direction on this point. A related point is that infectiousness of Ebola disease changes with time since onset, which the model ignores.
+
+**Operational implications.** The results support effort aimed at shortening the delay, with the caveat that benefits depend on isolation actually preventing contact: the most effective route would combine faster detection (community alert networks, decentralised sampling, rapid result return, which the preprint puts at 8.6 days from onset to test result [@ebengo2026]) with isolation capacity and quality (occupancy was above 100% in some facilities and 59% of confirmed deaths occurred outside treatment units [@kabasele2026]). Gains diminish: the second two days of improvement add less than the first two. The implementation ramp-up analysis shows that a 90-day roll-out would reduce the 5-day benefit from `\pctMedEightyFive{}`{=latex} to `\varRampNinetyFive{}`{=latex}% (lower limit `\varRampNinetyUiLo{}`{=latex}%).
+
+**Comparison with the literature.** Our qualitative conclusion that both speed and effectiveness of isolation determine control is consistent with the Ebola review of Chowell and Nishiura [@chowell2014], with earlier analyses of controllability [@fraser2004; @lipsitch2003], and with West African analyses linking faster isolation and community care to reduced transmission [@pandey2014; @kucharski2015; @faye2015]. Projections for the present outbreak by Mooring et al. varied the *fraction* isolated with a 2-day delay and perfect isolation [@mooring2026]; ours instead varies the delay itself with imperfect isolation and is anchored to the observed surveillance. Our baseline reproduction numbers (`\fitBReBeforeMed{}`{=latex} rising phase; `\fitBReAfterMed{}`{=latex} plateau) are lower than the 2.5--3.5 estimates reported early in the outbreak by branching-process and spatial models [@mooring2026; @ebengo2026], consistent with substantial control having already occurred; they are within the 1.3--2.7 range of earlier Central African outbreaks [@chowell2014; @lekone2006; @legrand2007].
+
+**Strengths.** The analysis is anchored to the outbreak's own data, accounts for right-truncation and a retrospective data reconciliation, propagates fit and literature uncertainty jointly in paired scenarios, checks conclusions with a stochastic model, global and structural sensitivity analyses and an out-of-sample forecast, and is fully reproducible from raw data with unit-tested code.
+
+**Limitations.** (1) *Delay structure.* The exponential competing-risk delay and constant infectiousness are simplifications; the structural analyses suggest conclusions are conservative in the direction tested, but infectiousness rising with time since onset, and post-mortem transmission at unsafe burials, are not modelled. (2) *Baseline delay.* The 7-day baseline is taken from the study brief and could not be confirmed in the primary source; shorter true delays would reverse the benefit of a 5-day target. (3) *Identifiability.* Case counts constrain growth, not $\epsilon$, the delay or the natural history; $\epsilon$ is a scenario assumption and the literature ranges are not drawn from the Nash database. (4) *Data.* Confirmed cases depend on testing, definitions and harmonisation; the onset curve is digitised and covers about two thirds of cases; we treated national data as homogeneous, whereas provinces differ (declining in Ituri, rising in North Kivu [@ukhsa2026]). (5) *Forecast error.* The out-of-sample forecast overestimated by `\valErrLong{}`{=latex} at 46 days; absolute counts are conditional on the plateau at 12 September, although percentage effects were insensitive to starting incidence. (6) *Omitted processes.* No contact tracing, health-worker infections, spatial structure, isolation-capacity constraints, behaviour change, or changes in fatality ratio; deaths averted are illustrative. (7) *Horizon and threshold.* Percentages depend on the 12-month horizon and on baseline $\Rt{}\approx1$. (8) *Counterfactual timing.* Scenarios begin on 12 September; the actual course since then is only used for validation.
+
+**Further work.** (i) Measure onset-to-isolation delays directly (line list); (ii) model the delay as a gamma-distributed waiting time with explicit isolated fraction; (iii) add contact tracing, health-care and funeral transmission; (iv) fit province-specific transmission; (v) refit with updated data to 28 October and beyond; (vi) replace literature ranges by the Nash et al. parameter database; (vii) add costs of delay-reduction options.
+
+# Conclusion
+
+For a model anchored to the observed course of the 2026 BVD outbreak, reducing the mean onset-to-isolation delay from 7 to 5 or 3 days would avert most cases over the next year and bring forward the end of transmission by years, provided isolation is effective and the true current delay is about 7 days. The principal uncertainties are the true current delay, the effectiveness of isolation and the baseline growth rate, all of which can be reduced by measurement. We recommend that onset-to-isolation delay be measured and reported routinely.
+
+# Declarations {#declarations .unnumbered}
+
+**Author contributions.** All authors contributed equally to the project (conception, modelling, analysis and writing); individual CRediT roles to be specified by the authors. **Funding.** None declared (to be confirmed). **Competing interests.** None declared (to be confirmed). **Ethics.** Only aggregated, publicly available surveillance data were used. **Data and code availability.** Surveillance data are in `data/bvd_2026/` (public sources, see their README); the analysis code, tests, results and this manuscript's source are in the accompanying repository; `R/run_all.R` regenerates every number, table and figure. **Use of generative AI.** Generative AI (Claude, Anthropic) was used for brainstorming, structuring the modelling workflow, explaining technical concepts, writing and testing analysis code, and drafting and language editing of this manuscript. The authors are responsible for reviewing and approving all analyses, interpretations and written content, and for verifying the references. **Acknowledgements.** We thank our advisers Dr James Azam and Andrej Jarynowski, and the INSP, INRB-UMIE and BVDOutbreakSize teams whose public data made this analysis possible.
+
+```{=latex}
+\bibliographystyle{unsrtnat}\bibliography{../manuscript/references}
+```
+```{=latex}
+\appendix\clearpage
+```
+# Mathematical details {#app:math}
+
+**Reproduction number.** For Model `\eqref{eq:model}`{=latex} with $S=N$, one case in $I$ spends $1/(\tau+\gamma)$ days non-isolated and is isolated with probability $a=\tau/(\tau+\gamma)$, after which it spends a further $1/\gamma$ days at relative infectiousness $1-\epsilon$. Hence $\Rt{}=\beta\{1/(\tau+\gamma)+a(1-\epsilon)/\gamma\}=(\beta/\gamma)(1-\epsilon a)$, which is Eq. `\eqref{eq:Re}`{=latex} (next-generation method [@vandendriessche2002]).
+
+**Erlang delay.** Replacing $I$ by $m$ stages $I_1,\dots,I_m$ with progression rate $m\tau$ and removal $\gamma$ from each, and isolation on leaving $I_m$, gives $a^m$ with $a=m\tau/(m\tau+\gamma)$ as the isolated share and $\Rt{}=(\beta/\gamma)(1-\epsilon a^m)$; as $m\to\infty$ the delay is fixed and the isolated share is $e^{-\gamma D}$ ($0.37$ for $D=\gamma^{-1}=7$). This is used for the Erlang-3 and Erlang-10 analyses (function `make_rhs`).
+
+**Calibration.** For fixed $(\sigma,\gamma,\tau_0,\epsilon)$ the growth rate of the linearised system with state $(E,I_1..I_m,Q)$ is the dominant eigenvalue of its Jacobian; $\beta$ is the root of $\text{eig}(\beta)=r$ (`uniroot`). The relation between growth rate and $\Rt{}$ depends on the generation-time distribution [@wallinga2007], which is why $\beta$ is recalibrated per draw. In the stochastic model the same is done with the one-step expected-value matrix.
+
+**Initial state.** The scenario starts from the dominant eigenvector (the stable distribution across $E,I,Q$ at the baseline), scaled so that $\sigma E=i(T)$ (the fitted incidence on 12 September).
+
+**Reporting delay.** With $c(L)=1-\exp\{-((L+0.5)/s)^\kappa\}$ the daily delay probability mass is $p(L)=c(L)-c(L-1)$, $c(-1)=0$. Fit B uses expected cumulative reports $\hat C(u)=\sum_{v\le u}\sum_{d\le v}i(d)p(v-d)$ and increments $\hat C(u_j)-\hat C(u_{j-1})$ over report intervals.
+
+**Stochastic model.** Per step $\Delta t$: $n_{SE}\sim\text{Bin}(S,1-e^{-\lambda\Delta t})$, $n_{EI}\sim\text{Bin}(E,1-e^{-\sigma\Delta t})$, $n_{IQ}\sim\text{Bin}(I,1-e^{-\tau\Delta t})$, then removals $\text{Bin}(I-n_{IQ},1-e^{-\gamma\Delta t})$ and $\text{Bin}(Q,1-e^{-\gamma\Delta t})$.
+
+**PRCC.** Ranks of each input and of the output are regressed on the ranks of the other inputs; the PRCC is the correlation of the residuals [@blower1994; @marino2008].
+
+# Supplementary tables
+
+```{=latex}
+\relax\begin{table}[H]\centering\small\caption{Partial rank correlation of 12-month cases with each parameter.}\label{tab:prcc}\input{../results/tables/prcc.tex}\end{table}
+```
+```{=latex}
+\relax\begin{table}[H]\centering\small\caption{Fit B refitted at extreme natural-history values (change date fixed at the best estimate; $\epsilon=0.8$).}\label{tab:nh}\input{../results/tables/naturalhistory.tex}\end{table}
+```
+```{=latex}
+\relax\begin{table}[H]\centering\small\caption{Transmission rate and reproduction number by isolation effectiveness (refit at the best change date). The growth rates, which are what the data identify, do not depend on $\epsilon$.}\label{tab:byeff}\input{../results/tables/byeffectiveness.tex}\end{table}
+```
+```{=latex}
+\relax\begin{table}[H]\centering\small\caption{Testing and positivity by month, 2026 (new confirmed cases after removing the 22 July step; samples analysed per day interpolated over missing days).}\label{tab:pos}\input{../results/tables/positivity.tex}\end{table}
+```
+# Repository layout and how to reproduce {#app:repro}
+
+```{=latex}
+\begin{verbatim}
+taus-isolation-delay/
+  README.md              how to run; run times; caveats
+  data/
+    bvd_2026/            surveillance streams (public; its README states sources and caveats)
+    cumulative_confirmed_drc.csv   later official counts used only for validation
+  R/
+    00_functions.R       model, calibration, stochastic engine, helpers, constants (CFG)
+    01_data_prep.R       reporting delay and the two fitting datasets
+    02_fit.R             maximum likelihood fit, profile over change date, draws, adequacy
+    03_scenarios.R       nine scenarios x paired draws; policy surface
+    04_stochastic.R      stochastic check
+    05_sensitivity.R     PRCC and structural variants
+    06_validation.R      out-of-sample forecast
+    07_figures_tables.R  figures, LaTeX tables, number macros (manuscript/numbers.tex)
+    run_all.R            runs tests, scripts 01-07, then compiles the manuscript
+  tests/test_model.R     unit tests of the model code
+  manuscript/            main.tex, references.bib, numbers.tex (auto-generated)
+  results/, figures/     all outputs (regenerated)
+\end{verbatim}
+```
+**To reproduce:** install R (here `\rVersion{}`{=latex}) and the `deSolve` package, then run `Rscript R/run_all.R` from the repository root (about 15 minutes) and, to rebuild the PDF, `pdflatex`/`bibtex` in `manuscript/`. Random seeds are set at the top of each script. The test script must pass before any analysis is run.
+
+# R code {#app:code}
+
+The scripts below are inserted directly from the repository files so the listing always matches the analysis. (`R/07_figures_tables.R`, which only draws figures and writes tables and macros, and `R/run_all.R` are in the repository.)
+
+## R/00_functions.R {#r00_functions.r .unnumbered}
+
+```{=latex}
+\lstinputlisting{../R/00_functions.R}
+```
+## R/01_data_prep.R {#r01_data_prep.r .unnumbered}
+
+```{=latex}
+\lstinputlisting{../R/01_data_prep.R}
+```
+## R/02_fit.R {#r02_fit.r .unnumbered}
+
+```{=latex}
+\lstinputlisting{../R/02_fit.R}
+```
+## R/03_scenarios.R {#r03_scenarios.r .unnumbered}
+
+```{=latex}
+\lstinputlisting{../R/03_scenarios.R}
+```
+## R/04_stochastic.R {#r04_stochastic.r .unnumbered}
+
+```{=latex}
+\lstinputlisting{../R/04_stochastic.R}
+```
+## R/05_sensitivity.R {#r05_sensitivity.r .unnumbered}
+
+```{=latex}
+\lstinputlisting{../R/05_sensitivity.R}
+```
+## R/06_validation.R {#r06_validation.r .unnumbered}
+
+```{=latex}
+\lstinputlisting{../R/06_validation.R}
+```
+## tests/test_model.R {#teststest_model.r .unnumbered}
+
+```{=latex}
+\lstinputlisting{../tests/test_model.R}
+```
